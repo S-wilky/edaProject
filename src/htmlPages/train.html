@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.plot.ly/plotly-2.25.2.min.js" charset="utf-8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/danfojs@1.2.0/lib/bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"> </script>
+    <link rel="stylesheet" href="../style.css" />
+    <title>Document</title>
+</head>
+<body>
+    <nav>
+        <ul>
+            <li><a id="logo" href="#">EDA Dashboard</a></li>
+            <li><a href="http://localhost:5173/">Upload</a></li>
+            <li><a href="#">Analyze</a></li>
+            <li><a class="selected" href="#">Train</a></li>
+        </ul>
+    </nav>
+    <div class="page">
+        <div class="content">
+            <h4>Create a Model</h4>
+            <div class="form">
+                <h5>Build a Model</h5>
+                <p>Limited to 30MB output</p>
+                <!-- <h6>Model Name</h6>
+                <input type="text" class="fill_width"> -->
+                <h6>Select Output</h6>
+                <select id="outputSelector" class="fill_width output select">
+                    <!-- <option value=""></option> -->
+                </select>
+                <div class="row fill_width">
+                    <h6 id="selectInputText">Select Inputs*</h6>
+                    <p>Select All: </p>
+                    <input type="checkbox" onclick="selectAllInputs()" name="selectAll" value="false">
+                </div>
+                <div id="inputSelector" class="fill_width inputs select"></div>
+                <p>*Must be numeric columns</p>
+                <h6>Select Model Type</h6>
+                <select id="modelTypeSelector" class="fill_width select">
+                    <option value="Regression">Regression</option>
+                    <option value="Classification">Classification</option>
+                </select>
+                <button class="self_center" onclick="createModel()">Score Model</button>
+                <!-- <div class="no_display"> -->
+                    <p id="lossScore"></p>
+                <!-- </div> -->
+            </div>
+        </div>
+    </div>
+    
+</body>
+<script>
+let outputSelector = document.getElementById("outputSelector");
+let inputSelector = document.getElementById("inputSelector");
+let modelTypeSelector = document.getElementById("modelTypeSelector");
+const df = retreiveDfFromSession();
+const df2 = df.copy();
+
+getOutputs();
+getInputs();
+
+outputSelector.addEventListener('change', () => {
+    getInputs();
+})
+
+function retreiveDfFromSession() {
+    //retreive df from session storage and convert from json to df
+    const json_df_stored = JSON.parse(sessionStorage.getItem("df"));
+    // console.log(json_df_stored);
+    new_df = new dfd.DataFrame(json_df_stored);
+    // console.log(new_df);
+    return new_df;
+}
+
+function getOutputs() {
+    const df = retreiveDfFromSession();
+    const arr = df.axis.columns;
+    let fullHTML = "";
+    fullHTML += "<option value='Select Output'>Select Output</option>";
+
+    arr.forEach(value=> {
+        fullHTML += "<option value='" + value + "'>" + value + "</option>";
+    })
+
+    outputSelector.innerHTML = fullHTML;
+}
+
+function getInputs() {
+    const output = outputSelector.value;
+    df_copy = df.copy();
+    const arr = df_copy.axis.columns;
+
+    columnTypes = df_copy.ctypes;
+    columnTypes.print();
+    console.log(columnTypes.shape);
+    console.log(columnTypes.values[0]);
+
+    // || !(columnTypes.values[index] == 'int32')
+
+    arr.forEach((value) => {
+        if (value == output) {
+            const index = arr.indexOf(value);
+            if (index > -1) {
+                arr.splice(index, 1);
+            }
+        }
+    })
+    let counter = 0
+    fullHTML = "";
+    arr.forEach(value=> {
+        counter += 1;
+        fullHTML += "<button id='input"+counter+"' onclick='selectInput(id)' class='input_button' value='" + value + "'>" + value + "</button>";
+    })
+
+    inputSelector.innerHTML = fullHTML;
+}
+
+function selectInput(id) {
+    selectedItem = document.getElementById(id);
+    if (selectedItem.className == "input_button") {
+       selectedItem.className = "selected_input"
+    }
+    else {
+        selectedItem.className = "input_button"
+    }
+}
+
+function selectAllInputs() {
+    let arr = Array.from(document.getElementsByClassName("input_button"));
+
+    if (Array.isArray(arr) && arr.length === 0) {
+        //if all buttons are selected, unselect everything
+        arr = Array.from(document.getElementsByClassName("selected_input"));
+        arr.forEach(value=> {
+        value.className = "input_button";
+        })
+    }
+    else {
+        //if any buttons are selected, select every button that isn't selected.
+        arr.forEach(value=> {
+        value.className = "selected_input";
+        })
+    }
+}
+
+function createModel () {
+
+    // Generate dummy data.
+    // const data2 = tf.randomNormal([100, 784]); //replace with session data df 
+    // const labels = tf.randomUniform([100, 10]);
+    // console.log(labels);
+    
+    //get selected inputs and outputs
+    const inputArr = Array.from(document.getElementsByClassName("selected_input"));
+    let inputs = [];
+    inputArr.forEach(value => {
+        inputs.push(value.value);
+    })
+    // console.log(inputs);
+    // df2 = df.copy();
+
+    // let output = outputSelector.value;
+    // console.log(outputSelector.value);
+    // const y = df.loc({columns: ["vendor"]});
+    let y = df2.column(outputSelector.value).tensor;
+    // const inputSize = y.size;
+    y = y.expandDims(1);
+    // y = tf.transpose(y);
+    console.log("yShape", y.shape);
+    let X = df2.loc({columns: inputs}).tensor;
+    // X = tf.transpose(X);
+    // const inputSize = X.size;
+    console.log("xShape", X.shape);
+    // console.log("input size: ", inputSize);
+
+    // let data = df.tensor;
+    // console.log(data);
+    // data = tf.util.shuffle(data);
+    
+    const lossFunction = (modelTypeSelector.value == "Classification") ? 'sigmoidCrossEntropy' : 'meanSquaredError';  //just an example
+    const model = tf.sequential({
+        layers: [
+        tf.layers.dense({inputShape: [X.shape[1]], units: 1, activation: 'relu'}),
+        // tf.layers.dense({units: 1, activation: 'softmax'}),
+        ]
+    });
+    model.summary();
+
+    model.compile({
+        optimizer: 'sgd',
+        loss: 'meanSquaredError',
+        metrics: ['accuracy']
+    });
+
+    function onBatchEnd(batch, logs) {
+        console.log('Accuracy', logs.acc);
+    }
+
+    // Train for 5 epochs with batch size of 32.
+    model.fit(X, y, {
+        epochs: 2,
+        batchSize: 32,
+        callbacks: {onBatchEnd}
+    }).then(info => {
+        info.history.acc.forEach((value, index) => {
+            console.log("Epoch ", index+1, " accuracy: ", info.history.acc[index]);
+        })
+        // console.log('Final accuracy', info.history.acc);
+        console.log('Loss: ' + info.history.loss[0]);
+        document.getElementById('lossScore').innerHTML = "Loss score: " + info.history.loss[0];
+    });
+}
+</script>
+</html>

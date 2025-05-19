@@ -20,11 +20,29 @@
     <div class="page">
         <div class="content">
             <h4>Correlation Plot</h4>
-            <button id="genPlot" onclick="corrPlot()">CorrPlot</button>
+            <!-- <button id="genPlot" onclick="corrPlot()">CorrPlot</button> -->
+            <div class="center">
+                <div id="correlation-heatmap"></div>
+            </div>
+            <button id="createModel" class="mid_button" onclick="goToTrain()">Create Model</button>
         </div>
     </div>
 </body>
 <script>
+corrPlot();
+
+function goToTrain() {
+    location.href = "./src/htmlPages/train.html";
+}
+
+function retreiveDfFromSession() {
+    //retreive df from session storage and convert from json to df
+    const json_df_stored = JSON.parse(sessionStorage.getItem("df"));
+    // console.log(json_df_stored);
+    new_df = new dfd.DataFrame(json_df_stored);
+    // console.log(new_df);
+    return new_df;
+}
 
 function corr(x, y) {
   let sumX = 0,
@@ -65,7 +83,8 @@ function test() {
 
 function corrPlot() {
 
-    df = new dfd.DataFrame(sessionStorage.getItem("df"));
+    // df = new dfd.DataFrame(sessionStorage.getItem("df"));
+    const df = retreiveDfFromSession();
 
     // dfd.readCSV(file)
     // .then(df => {
@@ -142,6 +161,8 @@ function corrPlot() {
         }];
 
         var layout = {
+        paper_bgcolor: "#121212",
+        plot_bgcolor: "#121212",
         autosize: false,
         width: window.innerWidth - 650,
         height: 700,
