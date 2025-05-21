@@ -37,8 +37,9 @@
             <p id="errorInfo"></p>
             <p id="fileSize"></p>
           </div>
-          <div id="dataframe"></div>
           <button id="goToAnalyze" class="no_display" onclick="goToAnalyze()">Analyze</button>
+          <div id="dataframe"></div>
+          <div id="columnInfo"></div>
           <!-- <div class="center">
             <div id="correlation-heatmap"></div>
           </div> -->
@@ -55,6 +56,7 @@
       const docIcon = document.getElementById('docIcon');
       const fileSize = document.getElementById('fileSize');
       const analyzeButton = document.getElementById('goToAnalyze');
+      const columnInfo = document.getElementById('columnInfo');
 
       openFileButton.addEventListener('click', () => {
       fileInput.click();
@@ -78,8 +80,9 @@
           fileSize.textContent = niceBytes(file.size);
           analyzeButton.className = "go_to_analyze";
         
-          saveFileToSession(file);
           printDfHead(file);
+          printDfInfo(file);
+          saveFileToSession(file);
         }
       }
       else {
@@ -94,7 +97,7 @@
         let output = true;
         dfd.readCSV(file)
         .then(df => {
-          
+          df = df.dropNa(1);
           // console.log(df);
           const json_df = dfd.toJSON(df);
           try {
@@ -194,6 +197,66 @@
               });
 
               // corrPlot(df);
+
+          }).catch(err => {
+          console.log(err);
+          })
+      }
+
+      function printDfInfo(file) {
+          // sessionStorage.setItem("file", JSON.stringify(file));
+          
+          dfd.readCSV(file)
+          .then(df => {
+              // return df;
+              // sessionStorage.setItem("df", df);
+              // const json_df = df.toJSON();
+              // sessionStorage.setItem("df", json_df);
+              
+              columnTypes = df.ctypes;
+              console.log(columnTypes);
+              columnCounts = df.count({axis: 0});
+              console.log(columnCounts.index);
+              console.log(columnCounts.$dataIncolumnFormat);
+              // dfInfo = df.describe.print();
+              // console.log(dfInfo);
+
+              let arr = [columnTypes.$dataIncolumnFormat, columnCounts.$dataIncolumnFormat]
+              let columnInfoDf = new dfd.DataFrame(arr, {columns: columnCounts.index})
+
+              columnInfoDf = columnInfoDf.addColumn("column", ["dtype", "non-null values"])
+
+              console.log(columnInfoDf)
+
+              const headerStyle = {
+                align: "center",
+                fill: { color: ["#222222"] },
+                font: { family: "Arial", size: 15, color: "#FFFFFF87" },
+                columnwidth: 200,
+                line: { color: "#FFFFFF38", width: 2 },
+              };
+              const cellStyle = {
+                align: ["center"],
+                justify: ["center"],
+                fill: { color: ["#121212"] },
+                font: { family: "Arial", size: 15, color: "#FFFFFF60" },
+                line: { color: "#FFFFFF38", width: 2 },
+                height: 45,
+              };
+
+              // columnTypes.plot('columnInfo').table();
+              columnInfoDf.plot('columnInfo').table({
+                config: {
+                  tableHeaderStyle: headerStyle,
+                  tableCellStyle: cellStyle,
+                },
+                layout: {
+                paper_bgcolor: "#121212",
+                plot_bgcolor: "#121212",
+                title: "Column Info",
+                }
+              });
+              // dfInfo.plot('columnInfo').table();
 
           }).catch(err => {
           console.log(err);
