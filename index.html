@@ -58,39 +58,79 @@
       const analyzeButton = document.getElementById('goToAnalyze');
       const columnInfo = document.getElementById('columnInfo');
 
+      const headerStyle = {
+        align: "center",
+        fill: { color: ["#222222"] },
+        font: { family: "Arial", size: 15, color: "#FFFFFF87" },
+        columnwidth: 200,
+        line: { color: "#FFFFFF38", width: 2 },
+      };
+      const cellStyle = {
+        align: ["center"],
+        justify: ["center"],
+        fill: { color: ["#121212"] },
+        font: { family: "Arial", size: 15, color: "#FFFFFF60" },
+        line: { color: "#FFFFFF38", width: 2 },
+        height: 45,
+      };
+
+      if (sessionStorage.getItem("df") != null) {
+        const json_df_stored = JSON.parse(sessionStorage.getItem("df"));
+        const new_df = new dfd.DataFrame(json_df_stored);
+
+        new_df.head().plot("dataframe", {displayModeBar: false}).table({
+          config: {
+            tableHeaderStyle: headerStyle,
+            tableCellStyle: cellStyle,
+          },
+          layout: {
+          paper_bgcolor: "#121212",
+          plot_bgcolor: "#121212",
+          title: "First 5 Rows",
+          }
+        });
+      }
+
+      //retreive df from session storage and convert from json to df
+    // const json_df_stored = JSON.parse(sessionStorage.getItem("df"));
+    // // console.log(json_df_stored);
+    // new_df = new dfd.DataFrame(json_df_stored);
+    // // console.log(new_df);
+    // return new_df;
+
       openFileButton.addEventListener('click', () => {
       fileInput.click();
       })
 
       fileInput.addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      
-      if (file) {
-        if (file.size > 200000000) {
-        fileInfo.textContent = null;
-        fileSize.textContent = null;
-        docIcon.className = 'no_display';
-        errorInfo.textContent = 'File is too large.';
+        const file = event.target.files[0];
+        
+        if (file) {
+          if (file.size > 200000000) {
+          fileInfo.textContent = null;
+          fileSize.textContent = null;
+          docIcon.className = 'no_display';
+          errorInfo.textContent = 'File is too large.';
+          }
+          else {
+            //File selected that meets requirements
+            errorInfo.textContent = null;
+            docIcon.className = 'success';
+            fileInfo.textContent = file.name;
+            fileSize.textContent = niceBytes(file.size);
+            analyzeButton.className = "go_to_analyze";
+          
+            printDfHead(file);
+            printDfInfo(file);
+            saveFileToSession(file);
+          }
         }
         else {
-          //File selected that meets requirements
-          errorInfo.textContent = null;
-          docIcon.className = 'success';
-          fileInfo.textContent = file.name;
-          fileSize.textContent = niceBytes(file.size);
-          analyzeButton.className = "go_to_analyze";
-        
-          printDfHead(file);
-          printDfInfo(file);
-          saveFileToSession(file);
+          fileInfo.textContent = null;
+          fileSize.textContent = null;
+          docIcon.className = 'no_display';
+          errorInfo.textContent = 'No file selected.';
         }
-      }
-      else {
-        fileInfo.textContent = null;
-        fileSize.textContent = null;
-        docIcon.className = 'no_display';
-        errorInfo.textContent = 'No file selected.';
-      }
       })
 
       function saveFileToSession(file) {
@@ -167,22 +207,6 @@
               // sessionStorage.setItem("df", df);
               // const json_df = df.toJSON();
               // sessionStorage.setItem("df", json_df);
-              
-              const headerStyle = {
-                align: "center",
-                fill: { color: ["#222222"] },
-                font: { family: "Arial", size: 15, color: "#FFFFFF87" },
-                columnwidth: 200,
-                line: { color: "#FFFFFF38", width: 2 },
-              };
-              const cellStyle = {
-                align: ["center"],
-                justify: ["center"],
-                fill: { color: ["#121212"] },
-                font: { family: "Arial", size: 15, color: "#FFFFFF60" },
-                line: { color: "#FFFFFF38", width: 2 },
-                height: 45,
-              };
 
               df.head().plot("dataframe", {displayModeBar: false}).table({
                 config: {

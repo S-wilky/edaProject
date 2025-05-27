@@ -109,9 +109,11 @@ function getInputs() {
     })
     let counter = 0
     fullHTML = "";
-    arr.forEach(value=> {
+    arr.forEach(value, index => {
         counter += 1;
-        fullHTML += "<button id='input"+counter+"' onclick='selectInput(id)' class='input_button' value='" + value + "'>" + value + "</button>";
+        // const selected = "";
+        // if (arr[index] = "selected_input") {selected = "selected_input"} else {selected = "input_button"}
+        fullHTML += "<button id='input"+counter+"' onclick='selectInput(id)' class='"+arr[index].className+"' value='" + value + "'>" + value + "</button>";
     })
 
     inputSelector.innerHTML = fullHTML;
