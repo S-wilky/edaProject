@@ -91,30 +91,39 @@ function getInputs() {
     const output = outputSelector.value;
     df_copy = df.copy();
     const arr = df_copy.axis.columns;
-
-    columnTypes = df_copy.ctypes;
-    columnTypes.print();
-    console.log(columnTypes.shape);
-    console.log(columnTypes.values[0]);
-
-    // || !(columnTypes.values[index] == 'int32')
-
-    arr.forEach((value) => {
-        if (value == output) {
-            const index = arr.indexOf(value);
-            if (index > -1) {
-                arr.splice(index, 1);
+    const selected_arr = new Array(arr.length).fill(0);
+    let button_id = "";
+    let curr_button = "";
+    
+    for (let i = 0; i < arr.length; i++) {
+        button_id = "input" + i;
+        if (document.getElementById(button_id) != null) {
+            curr_button = document.getElementById(button_id);
+            if (curr_button.className = "selected_input") {
+                selected_arr[i] = 1;
             }
         }
-    })
-    let counter = 0
+    }
+
+    // arr.forEach((value) => {
+    //     if (value == output) {
+    //         const index = arr.indexOf(value);
+    //         if (index > -1) {
+    //             arr.splice(index, 1);
+    //         }
+    //     }
+    // })
+    let selected = "";
     fullHTML = "";
-    arr.forEach(value, index => {
-        counter += 1;
-        // const selected = "";
+    // arr.forEach(value => {
+    for (let i = 0; i < arr.length; i++) {
+        if (arr[i] == ouput) {
+            continue;
+        }
+        if (selected_arr[i] == 1) {selected = "selected_input"} else {selected = "input_button"}
         // if (arr[index] = "selected_input") {selected = "selected_input"} else {selected = "input_button"}
-        fullHTML += "<button id='input"+counter+"' onclick='selectInput(id)' class='"+arr[index].className+"' value='" + value + "'>" + value + "</button>";
-    })
+        fullHTML += "<button id='input" + i + "' onclick='selectInput(id)' class='" + selected + "' value='" + arr[i] + "'>" + arr[i] + "</button>";
+    }
 
     inputSelector.innerHTML = fullHTML;
 }
