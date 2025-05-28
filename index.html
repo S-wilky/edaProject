@@ -89,6 +89,34 @@
           title: "First 5 Rows",
           }
         });
+
+        columnTypes = new_df.ctypes;
+        console.log(columnTypes);
+        columnCounts = new_df.count({axis: 0});
+        console.log(columnCounts.index);
+        console.log(columnCounts.$dataIncolumnFormat);
+        // dfInfo = df.describe.print();
+        // console.log(dfInfo);
+
+        let arr = [columnTypes.$dataIncolumnFormat, columnCounts.$dataIncolumnFormat]
+        let columnInfoDf = new dfd.DataFrame(arr, {columns: columnCounts.index})
+
+        columnInfoDf = columnInfoDf.addColumn("column", ["dtype", "non-null values"])
+
+        console.log(columnInfoDf)
+
+        // columnTypes.plot('columnInfo').table();
+        columnInfoDf.plot('columnInfo').table({
+          config: {
+            tableHeaderStyle: headerStyle,
+            tableCellStyle: cellStyle,
+          },
+          layout: {
+          paper_bgcolor: "#121212",
+          plot_bgcolor: "#121212",
+          title: "Column Info",
+          }
+        });
       }
 
       //retreive df from session storage and convert from json to df
@@ -251,22 +279,6 @@
               columnInfoDf = columnInfoDf.addColumn("column", ["dtype", "non-null values"])
 
               console.log(columnInfoDf)
-
-              const headerStyle = {
-                align: "center",
-                fill: { color: ["#222222"] },
-                font: { family: "Arial", size: 15, color: "#FFFFFF87" },
-                columnwidth: 200,
-                line: { color: "#FFFFFF38", width: 2 },
-              };
-              const cellStyle = {
-                align: ["center"],
-                justify: ["center"],
-                fill: { color: ["#121212"] },
-                font: { family: "Arial", size: 15, color: "#FFFFFF60" },
-                line: { color: "#FFFFFF38", width: 2 },
-                height: 45,
-              };
 
               // columnTypes.plot('columnInfo').table();
               columnInfoDf.plot('columnInfo').table({

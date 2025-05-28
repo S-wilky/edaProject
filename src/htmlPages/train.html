@@ -13,8 +13,10 @@
     <nav>
         <ul>
             <li><a id="logo" href="#">EDA Dashboard</a></li>
-            <li><a href="https://s-wilky.github.io/edaProject/">Upload</a></li>
-            <li><a href="https://s-wilky.github.io/edaProject/src/htmlPages/analyze.html">Analyze</a></li>
+            <li><a href="https://s-wilky.github.io/edaProject/">Upload</a></li>     
+            <!-- https://s-wilky.github.io/edaProject/ -->
+             <!-- http://localhost:5173/ -->
+            <li><a href="https://s-wilky.github.io/edaProject/htmlPages/analyze.html">Analyze</a></li>
             <li><a class="selected" href="#">Train</a></li>
         </ul>
     </nav>
@@ -33,7 +35,7 @@
                 <div class="row fill_width">
                     <h6 id="selectInputText">Select Inputs*</h6>
                     <p>Select All: </p>
-                    <input type="checkbox" onclick="selectAllInputs()" name="selectAll" value="false">
+                    <input id="selectAll" type="checkbox" onclick="selectAllInputs()" name="selectAll" value="false">
                 </div>
                 <div id="inputSelector" class="fill_width inputs select"></div>
                 <p>*Must be numeric columns</p>
@@ -55,6 +57,7 @@
 let outputSelector = document.getElementById("outputSelector");
 let inputSelector = document.getElementById("inputSelector");
 let modelTypeSelector = document.getElementById("modelTypeSelector");
+let selectAllInputButton = document.getElementById("selectAll");
 const df = retreiveDfFromSession();
 const df2 = df.copy();
 
@@ -91,7 +94,7 @@ function getInputs() {
     const output = outputSelector.value;
     df_copy = df.copy();
     const arr = df_copy.axis.columns;
-    const selected_arr = new Array(arr.length).fill(0);
+    let selected_arr = new Array(arr.length).fill(0);
     let button_id = "";
     let curr_button = "";
     
@@ -99,10 +102,16 @@ function getInputs() {
         button_id = "input" + i;
         if (document.getElementById(button_id) != null) {
             curr_button = document.getElementById(button_id);
-            if (curr_button.className = "selected_input") {
+            if (curr_button.className == "selected_input") {
                 selected_arr[i] = 1;
             }
+            else {
+                selected_arr[i] = 0;
+            }
         }
+        // console.log("button_id: "+button_id);
+        // console.log(curr_button.className);
+        // console.log(selected_arr[i]);
     }
 
     // arr.forEach((value) => {
@@ -117,11 +126,15 @@ function getInputs() {
     fullHTML = "";
     // arr.forEach(value => {
     for (let i = 0; i < arr.length; i++) {
-        if (arr[i] == ouput) {
+        if (arr[i] == output) {
             continue;
         }
-        if (selected_arr[i] == 1) {selected = "selected_input"} else {selected = "input_button"}
-        // if (arr[index] = "selected_input") {selected = "selected_input"} else {selected = "input_button"}
+
+        if (selected_arr[i] == 1) {selected = "selected_input";} else {selected = "input_button";}
+
+        // console.log(selected_arr[i]);
+        // console.log(arr[i]);
+
         fullHTML += "<button id='input" + i + "' onclick='selectInput(id)' class='" + selected + "' value='" + arr[i] + "'>" + arr[i] + "</button>";
     }
 
@@ -136,6 +149,7 @@ function selectInput(id) {
     else {
         selectedItem.className = "input_button"
     }
+    selectAllInputButton.value = false;
 }
 
 function selectAllInputs() {
