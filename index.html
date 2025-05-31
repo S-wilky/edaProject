@@ -78,16 +78,17 @@
         const json_df_stored = JSON.parse(sessionStorage.getItem("df"));
         const new_df = new dfd.DataFrame(json_df_stored);
 
-        new_df.head().plot("dataframe", {displayModeBar: false}).table({
+        new_df.head().plot("dataframe").table({
           config: {
             tableHeaderStyle: headerStyle,
             tableCellStyle: cellStyle,
+            displayModeBar: false
           },
           layout: {
-          paper_bgcolor: "#121212",
-          plot_bgcolor: "#121212",
-          title: "First 5 Rows",
-          }
+            paper_bgcolor: "#121212",
+            plot_bgcolor: "#121212",
+            title: "First 5 Rows",
+          },
         });
 
         columnTypes = new_df.ctypes;
@@ -110,11 +111,12 @@
           config: {
             tableHeaderStyle: headerStyle,
             tableCellStyle: cellStyle,
+            displayModeBar: false
           },
           layout: {
-          paper_bgcolor: "#121212",
-          plot_bgcolor: "#121212",
-          title: "Column Info",
+            paper_bgcolor: "#121212",
+            plot_bgcolor: "#121212",
+            title: "Column Info",
           }
         });
       }
@@ -236,16 +238,17 @@
               // const json_df = df.toJSON();
               // sessionStorage.setItem("df", json_df);
 
-              df.head().plot("dataframe", {displayModeBar: false}).table({
+              df.head().plot("dataframe").table({
                 config: {
                   tableHeaderStyle: headerStyle,
                   tableCellStyle: cellStyle,
+                  displayModeBar: false
                 },
                 layout: {
-                paper_bgcolor: "#121212",
-                plot_bgcolor: "#121212",
-                title: "First 5 Rows",
-                }
+                  paper_bgcolor: "#121212",
+                  plot_bgcolor: "#121212",
+                  title: "First 5 Rows",
+                },
               });
 
               // corrPlot(df);
@@ -285,12 +288,13 @@
                 config: {
                   tableHeaderStyle: headerStyle,
                   tableCellStyle: cellStyle,
+                  displayModeBar: false
                 },
                 layout: {
-                paper_bgcolor: "#121212",
-                plot_bgcolor: "#121212",
-                title: "Column Info",
-                }
+                  paper_bgcolor: "#121212",
+                  plot_bgcolor: "#121212",
+                  title: "Column Info",
+                },
               });
               // dfInfo.plot('columnInfo').table();
 

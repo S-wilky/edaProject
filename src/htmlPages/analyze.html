@@ -208,7 +208,7 @@ function corrPlot() {
         }
         }
 
-        Plotly.newPlot('correlation-heatmap', data, layout);  //prints the correlation plot to html
+        Plotly.newPlot('correlation-heatmap', data, layout, {displayModeBar: false});  //prints the correlation plot to html
         
     // }).catch(err => {
     // console.log(err);
