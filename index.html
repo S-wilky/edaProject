@@ -14,8 +14,8 @@
         <ul>
           <li><a id="logo" href="#">EDA Dashboard</a></li>
           <li><a class="selected" href="#">Upload</a></li>
-          <li><a href="https://s-wilky.github.io/edaProject/src/htmlPages/analyze.html">Analyze</a></li>
-          <li><a href="https://s-wilky.github.io/edaProject/src/htmlPages/train.html">Train</a></li>
+          <li><a id="analyzeLink" href="https://s-wilky.github.io/edaProject/src/htmlPages/analyze.html">Analyze</a></li>
+          <li><a id="trainLink" href="https://s-wilky.github.io/edaProject/src/htmlPages/train.html">Train</a></li>
         </ul>
       </nav>
       <div class="page">
@@ -57,6 +57,15 @@
       const fileSize = document.getElementById('fileSize');
       const analyzeButton = document.getElementById('goToAnalyze');
       const columnInfo = document.getElementById('columnInfo');
+      const analyzeLink = document.getElementById('analyzeLink');
+      const trainLink = document.getElementById('trainLink');
+
+      const testing = 0; //1 = testing mode, 0 = production mode for git pushes
+      
+      if (testing == 1) {
+        analyzeLink.href = "http://localhost:5173/src/htmlPages/analyze.html";
+        trainLink.href = "http://localhost:5173/src/htmlPages/train.html";
+      }
 
       const headerStyle = {
         align: "center",
@@ -188,7 +197,12 @@
       }
 
       function goToAnalyze() {
-        location.href = "https://s-wilky.github.io/edaProject/src/htmlPages/analyze.html";
+        if (testing == 1){
+          location.href = "http://localhost:5173/src/htmlPages/analyze.html"
+        }
+        else {
+          location.href = "https://s-wilky.github.io/edaProject/src/htmlPages/analyze.html";
+        }
       }
 
       const units = ['bytes', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'];

@@ -13,10 +13,10 @@
     <nav>
         <ul>
             <li><a id="logo" href="#">EDA Dashboard</a></li>
-            <li><a href="https://s-wilky.github.io/edaProject/">Upload</a></li>     
+            <li><a id="uploadLink" href="https://s-wilky.github.io/edaProject/">Upload</a></li>     
             <!-- https://s-wilky.github.io/edaProject/ -->
              <!-- http://localhost:5173/ -->
-            <li><a href="https://s-wilky.github.io/edaProject/htmlPages/analyze.html">Analyze</a></li>
+            <li><a id="analyzeLink" href="https://s-wilky.github.io/edaProject/src/htmlPages/analyze.html">Analyze</a></li>
             <li><a class="selected" href="#">Train</a></li>
         </ul>
     </nav>
@@ -58,6 +58,16 @@ let outputSelector = document.getElementById("outputSelector");
 let inputSelector = document.getElementById("inputSelector");
 let modelTypeSelector = document.getElementById("modelTypeSelector");
 let selectAllInputButton = document.getElementById("selectAll");
+const uploadLink = document.getElementById('uploadLink');
+const analyzeLink = document.getElementById('analyzeLink');
+
+const testing = 0; //1 = testing mode, 0 = production mode for git pushes
+
+if (testing == 1) {
+    uploadLink.href = "http://localhost:5173/";
+    analyzeLink.href = "http://localhost:5173/src/htmlPages/analyze.html";
+}
+
 const df = retreiveDfFromSession();
 const df2 = df.copy();
 
@@ -78,14 +88,21 @@ function retreiveDfFromSession() {
 }
 
 function getOutputs() {
-    const df = retreiveDfFromSession();
-    const arr = df.axis.columns;
+    // const df = retreiveDfFromSession();
+    const arr = df2.axis.columns;
+    const columnTypes = df2.ctypes;
     let fullHTML = "";
     fullHTML += "<option value='Select Output'>Select Output</option>";
 
     arr.forEach(value=> {
         fullHTML += "<option value='" + value + "'>" + value + "</option>";
     })
+
+    // for (let i = 0; i < arr.length; i++) {
+    //     if (Number.isFinite(arr[i])){
+    //     fullHTML += "<option value='" + arr[i] + "'>" + arr[i] + "</option>";
+    //     }
+    // }
 
     outputSelector.innerHTML = fullHTML;
 }

@@ -12,11 +12,11 @@
     <nav>
         <ul>
             <li><a id="logo" href="#">EDA Dashboard</a></li>
-            <li><a href="https://s-wilky.github.io/edaProject/">Upload</a></li>
+            <li><a id="uploadLink" href="https://s-wilky.github.io/edaProject/">Upload</a></li>
             <!-- https://s-wilky.github.io/edaProject/ -->
              <!-- http://localhost:5173/ -->
             <li><a class="selected" href="#">Analyze</a></li>
-            <li><a href="https://s-wilky.github.io/edaProject/src/htmlPages/train.html">Train</a></li>
+            <li><a id="trainLink" href="https://s-wilky.github.io/edaProject/src/htmlPages/train.html">Train</a></li>
         </ul>
     </nav>
     <div class="page">
@@ -31,10 +31,25 @@
     </div>
 </body>
 <script>
+const uploadLink = document.getElementById('uploadLink');
+const trainLink = document.getElementById('trainLink');
+
+const testing = 0; //1 = testing mode, 0 = production mode for git pushes
+
+if (testing == 1) {
+uploadLink.href = "http://localhost:5173/";
+trainLink.href = "http://localhost:5173/src/htmlPages/train.html";
+}
+
 corrPlot();
 
 function goToTrain() {
+    if (testing == 1){
+        location.href = "http://localhost:5173/src/htmlPages/train.html"
+    }
+    else {
     location.href = "https://s-wilky.github.io/edaProject/src/htmlPages/train.html";
+    }
 }
 
 function retreiveDfFromSession() {
