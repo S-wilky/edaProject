@@ -139,7 +139,7 @@ h6{
 .inputs{
   display: flex;
   flex-wrap: wrap;
-  height: 6em;
+  min-height: 6em;
 }
 .row{
   display: flex;

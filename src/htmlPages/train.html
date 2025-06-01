@@ -26,6 +26,7 @@
             <div class="form">
                 <h5>Build a Model</h5>
                 <p>Limited to 30MB output</p>
+                <p>Limited numeric columns (int32 and float64)</p>
                 <!-- <h6>Model Name</h6>
                 <input type="text" class="fill_width"> -->
                 <h6>Select Output</h6>
@@ -38,7 +39,6 @@
                     <input id="selectAll" type="checkbox" onclick="selectAllInputs()" name="selectAll" value="false">
                 </div>
                 <div id="inputSelector" class="fill_width inputs select"></div>
-                <p>*Must be numeric columns</p>
                 <h6>Select Model Type</h6>
                 <select id="modelTypeSelector" class="fill_width select">
                     <option value="Regression">Regression</option>
@@ -46,7 +46,7 @@
                 </select>
                 <button class="self_center" onclick="createModel()">Score Model</button>
                 <!-- <div class="no_display"> -->
-                    <p id="lossScore"></p>
+                    <p id="modelMessage"></p>
                 <!-- </div> -->
             </div>
         </div>
@@ -60,6 +60,7 @@ let modelTypeSelector = document.getElementById("modelTypeSelector");
 let selectAllInputButton = document.getElementById("selectAll");
 const uploadLink = document.getElementById('uploadLink');
 const analyzeLink = document.getElementById('analyzeLink');
+const modelMessage = document.getElementById('modelMessage');
 
 const testing = 0; //1 = testing mode, 0 = production mode for git pushes
 
@@ -94,24 +95,27 @@ function getOutputs() {
     let fullHTML = "";
     fullHTML += "<option value='Select Output'>Select Output</option>";
 
-    arr.forEach(value=> {
-        fullHTML += "<option value='" + value + "'>" + value + "</option>";
-    })
+    // arr.forEach(value=> {
+    //     fullHTML += "<option value='" + value + "'>" + value + "</option>";
+    // })
 
-    // for (let i = 0; i < arr.length; i++) {
-    //     if (Number.isFinite(arr[i])){
-    //     fullHTML += "<option value='" + arr[i] + "'>" + arr[i] + "</option>";
-    //     }
-    // }
+    for (let i = 0; i < arr.length; i++) {
+        if (columnTypes.$dataIncolumnFormat[i] == 'int32' || columnTypes.$dataIncolumnFormat[i] == 'float64'){
+        fullHTML += "<option value='" + arr[i] + "'>" + arr[i] + "</option>";
+        }
+        console.log(arr[i]);
+        console.log(columnTypes.$dataIncolumnFormat[i]);
+    }
 
     outputSelector.innerHTML = fullHTML;
 }
 
 function getInputs() {
     const output = outputSelector.value;
-    df_copy = df.copy();
-    const arr = df_copy.axis.columns;
+    // df_copy = df.copy();
+    const arr = df2.axis.columns;
     let selected_arr = new Array(arr.length).fill(0);
+    const columnTypes = df2.ctypes;
     let button_id = "";
     let curr_button = "";
     
@@ -151,8 +155,9 @@ function getInputs() {
 
         // console.log(selected_arr[i]);
         // console.log(arr[i]);
-
-        fullHTML += "<button id='input" + i + "' onclick='selectInput(id)' class='" + selected + "' value='" + arr[i] + "'>" + arr[i] + "</button>";
+        if (columnTypes.$dataIncolumnFormat[i] == 'int32' || columnTypes.$dataIncolumnFormat[i] == 'float64'){
+            fullHTML += "<button id='input" + i + "' onclick='selectInput(id)' class='" + selected + "' value='" + arr[i] + "'>" + arr[i] + "</button>";
+        }
     }
 
     inputSelector.innerHTML = fullHTML;
@@ -189,6 +194,8 @@ function selectAllInputs() {
 
 function createModel () {
 
+    modelMessage.innerHTML = "Loading";
+
     // Generate dummy data.
     // const data2 = tf.randomNormal([100, 784]); //replace with session data df 
     // const labels = tf.randomUniform([100, 10]);
@@ -203,56 +210,63 @@ function createModel () {
     // console.log(inputs);
     // df2 = df.copy();
 
-    // let output = outputSelector.value;
-    // console.log(outputSelector.value);
-    // const y = df.loc({columns: ["vendor"]});
-    let y = df2.column(outputSelector.value).tensor;
-    // const inputSize = y.size;
-    y = y.expandDims(1);
-    // y = tf.transpose(y);
-    console.log("yShape", y.shape);
-    let X = df2.loc({columns: inputs}).tensor;
-    // X = tf.transpose(X);
-    // const inputSize = X.size;
-    console.log("xShape", X.shape);
-    // console.log("input size: ", inputSize);
+    try {
+        // let output = outputSelector.value;
+        // console.log(outputSelector.value);
+        // const y = df.loc({columns: ["vendor"]});
+        let y = df2.column(outputSelector.value).tensor;
+        // const inputSize = y.size;
+        y = y.expandDims(1);
+        // y = tf.transpose(y);
+        console.log("yShape", y.shape);
+        let X = df2.loc({columns: inputs}).tensor;
+        // X = tf.transpose(X);
+        // const inputSize = X.size;
+        console.log("xShape", X.shape);
+        // console.log("input size: ", inputSize);
+        // let data = df.tensor;
+        // console.log(data);
+        // data = tf.util.shuffle(data);
+        
+        const lossFunction = (modelTypeSelector.value == "Classification") ? 'sigmoidCrossEntropy' : 'meanSquaredError';  //just an example
+        const model = tf.sequential({
+            layers: [
+            tf.layers.dense({inputShape: [X.shape[1]], units: 1, activation: 'relu'}),
+            // tf.layers.dense({units: 1, activation: 'softmax'}),
+            ]
+        });
+        model.summary();
 
-    // let data = df.tensor;
-    // console.log(data);
-    // data = tf.util.shuffle(data);
-    
-    const lossFunction = (modelTypeSelector.value == "Classification") ? 'sigmoidCrossEntropy' : 'meanSquaredError';  //just an example
-    const model = tf.sequential({
-        layers: [
-        tf.layers.dense({inputShape: [X.shape[1]], units: 1, activation: 'relu'}),
-        // tf.layers.dense({units: 1, activation: 'softmax'}),
-        ]
-    });
-    model.summary();
+        model.compile({
+            optimizer: 'sgd',
+            loss: 'meanSquaredError',
+            metrics: ['accuracy']
+        });
 
-    model.compile({
-        optimizer: 'sgd',
-        loss: 'meanSquaredError',
-        metrics: ['accuracy']
-    });
+        function onBatchEnd(batch, logs) {
+            console.log('Accuracy', logs.acc);
+        }
 
-    function onBatchEnd(batch, logs) {
-        console.log('Accuracy', logs.acc);
+        // Train for 5 epochs with batch size of 32.
+        model.fit(X, y, {
+            epochs: 2,
+            batchSize: 32,
+            callbacks: {onBatchEnd}
+        }).then(info => {
+            info.history.acc.forEach((value, index) => {
+                console.log("Epoch ", index+1, " accuracy: ", info.history.acc[index]);
+            })
+            // console.log('Final accuracy', info.history.acc);
+            console.log('Loss: ' + info.history.loss[0]);
+            modelMessage.innerHTML = "Loss score: " + info.history.loss[0];
+        }).catch((err) => {
+            console.error(err);
+            modelMessage.innerHTML = err;
+        });
+    } catch (err) {
+        console.error(err);
+        modelMessage.innerHTML = err;
     }
-
-    // Train for 5 epochs with batch size of 32.
-    model.fit(X, y, {
-        epochs: 2,
-        batchSize: 32,
-        callbacks: {onBatchEnd}
-    }).then(info => {
-        info.history.acc.forEach((value, index) => {
-            console.log("Epoch ", index+1, " accuracy: ", info.history.acc[index]);
-        })
-        // console.log('Final accuracy', info.history.acc);
-        console.log('Loss: ' + info.history.loss[0]);
-        document.getElementById('lossScore').innerHTML = "Loss score: " + info.history.loss[0];
-    });
 }
 </script>
 </html>
